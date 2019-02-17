@@ -44,7 +44,8 @@ export default {
   },
   methods: {
     onSubmit() {
-      console.log(this.formdata);
+      // console.log(this.formdata);
+      this.$store.dispatch("signup", this.formdata);
     }
   }
 };
