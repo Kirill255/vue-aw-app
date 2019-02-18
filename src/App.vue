@@ -12,6 +12,9 @@ import compHeader from "./components/Header/Header.vue";
 export default {
   components: {
     compHeader
+  },
+  created() {
+    this.$store.dispatch("refreshToken");
   }
 };
 </script>

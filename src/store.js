@@ -7,6 +7,7 @@ Vue.use(Vuex);
 
 // https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=[API_KEY]
 // https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=[API_KEY]
+// https://securetoken.googleapis.com/v1/token?key=[API_KEY]
 
 const FbAuth = "https://www.googleapis.com/identitytoolkit/v3/relyingparty";
 
@@ -70,6 +71,29 @@ export default new Vuex.Store({
           localStorage.setItem("refreshToken", authData.refreshToken);
         })
         .catch((err) => console.log(err));
+    },
+    refreshToken({ commit }) {
+      const refreshToken = localStorage.getItem("refreshToken");
+      // по хорошему в localStorage нужно сохранять ещё expiresIn и потом проверять, если token протух, то редирект на signin, если ещё нормальный, то делать запрос
+      if (refreshToken) {
+        Vue.http
+          .post(`https://securetoken.googleapis.com/v1/token?key=${FbApiKey}`, {
+            grant_type: "refresh_token",
+            refresh_token: refreshToken
+          })
+          .then((response) => response.json())
+          .then((authData) => {
+            // console.log(authData);
+            // возвращает не совсем тот объект как другие запросы, поэтому мы не можем просто передать commit("auth", authData); нужные нам данные лежат по другим ключам, Тут есть одна проблема что у нас сдесь нет поля email, это мы исправим позже
+            commit("auth", {
+              idToken: authData.id_token,
+              refreshToken: authData.refresh_token
+            });
+            localStorage.setItem("token", authData.id_token);
+            localStorage.setItem("refreshToken", authData.refresh_token);
+          })
+          .catch((err) => console.log(err));
+      }
     }
   }
 });
