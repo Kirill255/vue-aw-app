@@ -18,7 +18,11 @@ export default new Vuex.Store({
     token: "",
     refreshToken: ""
   },
-  getters: {},
+  getters: {
+    isAuth(state) {
+      return state.token ? true : false;
+    }
+  },
   mutations: {
     auth(state, authData) {
       state.email = authData.email;
