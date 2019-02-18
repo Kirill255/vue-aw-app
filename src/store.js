@@ -8,6 +8,7 @@ Vue.use(Vuex);
 // https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=[API_KEY]
 // https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=[API_KEY]
 // https://securetoken.googleapis.com/v1/token?key=[API_KEY]
+// https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=[API_KEY]
 
 const FbAuth = "https://www.googleapis.com/identitytoolkit/v3/relyingparty";
 
@@ -17,7 +18,8 @@ export default new Vuex.Store({
   state: {
     email: "",
     token: "",
-    refreshToken: ""
+    refreshToken: "",
+    userInfo: null
   },
   getters: {
     isAuth(state) {
@@ -39,6 +41,9 @@ export default new Vuex.Store({
       localStorage.removeItem("refreshToken");
 
       router.push("/");
+    },
+    addUserInfo(state, userInfo) {
+      state.userInfo = userInfo;
     }
   },
   actions: {
@@ -91,6 +96,22 @@ export default new Vuex.Store({
             });
             localStorage.setItem("token", authData.id_token);
             localStorage.setItem("refreshToken", authData.refresh_token);
+          })
+          .catch((err) => console.log(err));
+      }
+    },
+    getUserInfo({ commit, state }) {
+      const token = state.token;
+      if (token) {
+        Vue.http
+          .post(`${FbAuth}/getAccountInfo?key=${FbApiKey}`, {
+            idToken: token
+          })
+          .then((response) => response.json())
+          .then((userInfo) => {
+            // console.log(userInfo);
+            // см.доку, инфа лежит в userInfo.users[0]
+            commit("addUserInfo", userInfo.users[0]);
           })
           .catch((err) => console.log(err));
       }
